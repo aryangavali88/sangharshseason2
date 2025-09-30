@@ -25,6 +25,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -36,7 +37,7 @@ const formSchema = z.object({
   class: z.string().min(1, "Class is required"),
   roleNumber: z.string().min(1, "Role number is required"),
   photo: z.instanceof(File, { message: "Photo is required" }),
-  position: z.enum(["batsman", "bowler", "wicket-keeper"], {
+  position: z.enum(["batsman", "bowler", "all-rounder"], {
     required_error: "Please select a position",
   }),
   season1Team: z.enum([
@@ -49,6 +50,7 @@ const formSchema = z.object({
   ], {
     required_error: "Please select a team from Season 1",
   }),
+  achievement: z.string().max(500, "Max 500 characters").optional(),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -59,13 +61,13 @@ const teams = [
   { value: "kolkata-knights", label: "Joshi Warriors" },
   { value: "delhi-dynamos", label: "The Aurwadkars" },
   { value: "bangalore-blazers", label: "GUPTE GLADIATORS" },
-  { value: "rajasthan-royals", label: "Brije Blasters" },
+  { value: "rajasthan-royals", label: "Birje Blasters" },
 ];
 
 const positions = [
   { value: "batsman", label: "Batsman" },
   { value: "bowler", label: "Bowler" },
-  { value: "wicket-keeper", label: "Wicket Keeper" },
+  { value: "all-rounder", label: "All Rounder" },
 ];
 
 interface RegistrationDialogProps {
@@ -82,6 +84,7 @@ export function RegistrationDialog({ children }: RegistrationDialogProps) {
       name: "",
       class: "",
       roleNumber: "",
+      achievement: "",
     },
   });
 
@@ -93,6 +96,7 @@ export function RegistrationDialog({ children }: RegistrationDialogProps) {
         roleNumber: data.roleNumber,
         position: data.position,
         season1Team: data.season1Team,
+        achievement: data.achievement,
         photoName: data.photo.name,
         photoSize: data.photo.size
       });
@@ -134,6 +138,7 @@ export function RegistrationDialog({ children }: RegistrationDialogProps) {
         photo_url: publicUrl,
         position: data.position,
         season1_team: data.season1Team,
+        achievement: (data.achievement?.trim() || null) as string | null,
       };
 
       console.log('Saving registration data:', registrationData);
@@ -294,6 +299,20 @@ export function RegistrationDialog({ children }: RegistrationDialogProps) {
                       ))}
                     </SelectContent>
                   </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="achievement"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Achievement (optional)</FormLabel>
+                  <FormControl>
+                    <Textarea placeholder="Mention notable cricket achievements (max 500 characters)" {...field} />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}

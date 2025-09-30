@@ -35,6 +35,12 @@ const Teams = () => {
   const [selectedTeam, setSelectedTeam] = useState<{ name: string; initialPoints: number } | null>(null);
   const { toast } = useToast();
 
+  const getDisplayTeamName = (name: string) => {
+    if (name === "Brije Blasters") return "Birje Blasters";
+    if (name === "Pathak Panthers") return "Patil Panthers";
+    return name;
+  };
+
   useEffect(() => {
     loadTeams();
   }, []);
@@ -90,7 +96,7 @@ const Teams = () => {
   };
 
   const handleViewTeam = (team: TeamWithStats) => {
-    setSelectedTeam({ name: team.name, initialPoints: team.initial_points });
+    setSelectedTeam({ name: getDisplayTeamName(team.name), initialPoints: team.initial_points });
   };
 
   if (loading) {
@@ -172,7 +178,7 @@ const Teams = () => {
                   const percent = ((team.initial_points - team.remaining_points) / team.initial_points) * 100;
                   return (
                     <TableRow key={team.id}>
-                      <TableCell className="font-medium">{team.name}</TableCell>
+                      <TableCell className="font-medium">{getDisplayTeamName(team.name)}</TableCell>
                       <TableCell className="hidden sm:table-cell text-muted-foreground">
                         {team.initial_points.toLocaleString()}
                       </TableCell>

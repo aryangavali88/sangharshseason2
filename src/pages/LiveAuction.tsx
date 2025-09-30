@@ -93,11 +93,11 @@ const LiveAuction = () => {
 
   const teams = [
     "Navgekar Stickers",
-    "Pathak Panthers",
+    "Patil Panthers",
     "Joshi Warriors",
     "The Aurwadkars",
     "GUPTE GLADIATORS",
-    "Brije Blasters"
+    "Birje Blasters"
   ];
 
   const loadCurrentRound = async () => {
@@ -284,7 +284,8 @@ const LiveAuction = () => {
     name: activePlayer?.name || "",
     role: activePlayer?.position || "",
     auctionNumber: activePlayer?.auction_number,
-    basePrice: 50000,
+    achievement: activePlayer?.achievement || "",
+    basePrice: 100,
     image: activePlayer?.photo_url || cricketPlayerAction,
     rankings: {
       mvp: activePlayer?.["MVP RANK"] || 0,
@@ -677,6 +678,9 @@ const LiveAuction = () => {
               <p className="text-xs text-muted-foreground mb-1">Auction No: {currentPlayer.auctionNumber}</p>
             )}
             <p className="text-muted-foreground mb-2">{currentPlayer.role || "N/A"}</p>
+            {currentPlayer.achievement && (
+              <p className="text-sm text-muted-foreground mb-2">Achievement: {currentPlayer.achievement}</p>
+            )}
             {activePlayer?.is_unsold && (
               <div className="inline-flex items-center gap-2 mb-2">
                 <Badge variant="destructive" className="text-xs">Unsold</Badge>

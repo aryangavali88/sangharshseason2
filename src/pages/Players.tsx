@@ -23,6 +23,8 @@ export default function Players() {
   const [query, setQuery] = useState("");
   const [allPlayers, setAllPlayers] = useState<PlayerRow[]>([]);
 
+  
+
   // Top bids state
   const [topBids, setTopBids] = useState<Array<{ playerName: string; teamName: string; bidAmount: number; photoUrl?: string; position?: string }>>([]);
   const [topLoading, setTopLoading] = useState(true);
@@ -90,9 +92,7 @@ export default function Players() {
   const rows = useMemo(() => {
     if (!query) return allPlayers;
     const q = query.toLowerCase();
-    return allPlayers.filter((p) =>
-      [p.name, p.position, p.season1_team].some((v) => v.toLowerCase().includes(q))
-    );
+    return allPlayers.filter((p) => [p.name, p.position].some((v) => v.toLowerCase().includes(q)));
   }, [query, allPlayers]);
 
   return (
@@ -165,7 +165,6 @@ export default function Players() {
                 <TableHead>Player</TableHead>
                 <TableHead>Position</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Season 1 Team</TableHead>
                 <TableHead>Stats</TableHead>
               </TableRow>
             </TableHeader>
@@ -189,7 +188,6 @@ export default function Players() {
                       <Badge variant="secondary" className="text-xs">Active</Badge>
                     )}
                   </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">{p.season1_team}</TableCell>
                   <TableCell>
                     <PlayerStatsPopover roleNumber={p.role_number} playerName={p.name} />
                   </TableCell>

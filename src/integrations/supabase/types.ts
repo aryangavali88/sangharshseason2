@@ -110,6 +110,7 @@ export type Database = {
       player_registrations: {
         Row: {
           auction_number: number
+          achievement: string | null
           class: string
           created_at: string
           id: string
@@ -123,6 +124,7 @@ export type Database = {
         }
         Insert: {
           auction_number?: number
+          achievement?: string | null
           class: string
           created_at?: string
           id?: string
@@ -136,6 +138,7 @@ export type Database = {
         }
         Update: {
           auction_number?: number
+          achievement?: string | null
           class?: string
           created_at?: string
           id?: string

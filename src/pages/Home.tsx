@@ -2,9 +2,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Trophy, Users, Calendar, Target } from "lucide-react";
+import { Users, Gavel } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { RegistrationDialog } from "@/components/RegistrationDialog";
 import { useSeason1Photos } from "@/hooks/useSeason1Photos";
 import { PhotoCarousel } from "@/components/PhotoCarousel";
@@ -15,6 +16,7 @@ import cricketTeamCelebration from "@/assets/cricket-team-celebration.jpg";
 import cricketTrophy from "@/assets/cricket-trophy.jpg";
 const Home = () => {
   const { photos: season1Photos, loading: photosLoading } = useSeason1Photos();
+  const [registrationCount, setRegistrationCount] = useState<number | null>(null);
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -31,6 +33,20 @@ const Home = () => {
     console.log("Registration data:", formData);
     // Handle registration logic here
   };
+
+  useEffect(() => {
+    const fetchRegistrationCount = async () => {
+      const { error, count } = await supabase
+        .from('player_registrations')
+        .select('*', { count: 'exact', head: true });
+      if (!error) {
+        setRegistrationCount(count ?? 0);
+      } else {
+        console.error('Failed to fetch registration count', error);
+      }
+    };
+    fetchRegistrationCount();
+  }, []);
   const highlights = [{
     title: "Live Auction",
     description: "Join live auction and bid for your favorite players in real-time.",
@@ -54,7 +70,7 @@ const Home = () => {
     { src: "/team-logos/Birdje_20241016_021955_0000.png", alt: "Birje Champions" },
     { src: "/team-logos/Joshi_20241016_022134_0000.png", alt: "Joshi Warriors" },
     { src: "/team-logos/Navgekar_20241016_022103_0000.png", alt: "Navgekar Strikers" },
-    { src: "/team-logos/Patak-Panther_20241016_022031_0000.png", alt: "Patak Panthers" },
+    { src: "/team-logos/patil_panthers.png", alt: "Patil Panthers" },
     { src: "/team-logos/Red-Represents-A-Combination-Of-Spartan-Helmet-Logo_20241016_022337_0000.png", alt: "Gupte" }
   ];
   return <div className="min-h-screen w-screen overflow-x-hidden">
@@ -90,8 +106,19 @@ const Home = () => {
           <div className="space-y-8 sm:space-y-12 w-full">
             {highlights.map((highlight, index) => (
               <div key={index} className="flex flex-col items-center gap-4 sm:gap-6 w-full">
-                <div className="w-full max-w-full">
-                  <img src={highlight.image} alt={highlight.title} className="w-full h-48 sm:h-56 lg:h-64 object-cover rounded-lg shadow-cricket max-w-full" />
+                <div className="w-full max-w-full relative">
+                  <img 
+                    src={highlight.image} 
+                    alt={highlight.title} 
+                    loading="lazy"
+                    className="w-full h-48 sm:h-56 lg:h-64 object-cover rounded-lg shadow-cricket max-w-full"
+                  />
+                  {highlight.title === "Live Auction" && (
+                    <div className="absolute top-2 left-2 bg-black/70 text-white px-2 py-1 rounded-md flex items-center gap-1 text-xs sm:text-sm">
+                      <Gavel className="w-3 h-3 sm:w-4 sm:h-4" />
+                      <span>Auction</span>
+                    </div>
+                  )}
                 </div>
                 <div className="w-full text-center max-w-full">
                   <h3 className="text-xl sm:text-2xl font-bold mb-2 sm:mb-3 text-foreground break-words">{highlight.title}</h3>
@@ -126,23 +153,19 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Stats Section */}
+      {/* Registration Stats Section */}
       <section className="py-8 sm:py-12 lg:py-16 px-4 bg-background w-full overflow-x-hidden">
         <div className="max-w-4xl mx-auto text-center w-full">
-          <h2 className="text-2xl sm:text-3xl font-bold mb-8 sm:mb-12 text-foreground break-words">Season 2 Stats</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold mb-8 sm:mb-12 text-foreground break-words">Registration so far</h2>
           
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 w-full">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 sm:gap-8 w-full">
             <div className="space-y-2 w-full">
-              <div className="text-3xl sm:text-4xl font-bold text-primary break-words">50+</div>
-              <div className="text-sm sm:text-base text-muted-foreground break-words">Registered Players</div>
+              <div className="text-3xl sm:text-4xl font-bold text-primary break-words">{registrationCount ?? "--"}</div>
+              <div className="text-sm sm:text-base text-muted-foreground break-words">Registrations</div>
             </div>
             <div className="space-y-2 w-full">
-              <div className="text-3xl sm:text-4xl font-bold text-primary break-words">8</div>
-              <div className="text-sm sm:text-base text-muted-foreground break-words">Team Franchises</div>
-            </div>
-            <div className="space-y-2 w-full">
-              <div className="text-3xl sm:text-4xl font-bold text-primary break-words">₹10L</div>
-              <div className="text-sm sm:text-base text-muted-foreground break-words">Total Prize Pool</div>
+              <div className="text-3xl sm:text-4xl font-bold text-primary break-words">6</div>
+              <div className="text-sm sm:text-base text-muted-foreground break-words">Teams</div>
             </div>
           </div>
         </div>
