@@ -47,9 +47,7 @@ const formSchema = z.object({
     "delhi-dynamos",
     "bangalore-blazers",
     "rajasthan-royals"
-  ], {
-    required_error: "Please select a team from Season 1",
-  }),
+  ]).optional(),
   achievement: z.string().max(500, "Max 500 characters").optional(),
 });
 
@@ -76,6 +74,7 @@ interface RegistrationDialogProps {
 
 export function RegistrationDialog({ children }: RegistrationDialogProps) {
   const [open, setOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const { toast } = useToast();
   
   const form = useForm<FormData>({
@@ -88,7 +87,39 @@ export function RegistrationDialog({ children }: RegistrationDialogProps) {
     },
   });
 
+  const compressImage = async (file: File, maxWidth = 1280, maxHeight = 1280, quality = 0.8): Promise<File> => {
+    try {
+      const img = document.createElement('img');
+      const objectUrl = URL.createObjectURL(file);
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve();
+        img.onerror = reject;
+        img.src = objectUrl;
+      });
+
+      const ratio = Math.min(maxWidth / img.width, maxHeight / img.height, 1);
+      const targetW = Math.round(img.width * ratio);
+      const targetH = Math.round(img.height * ratio);
+
+      const canvas = document.createElement('canvas');
+      canvas.width = targetW;
+      canvas.height = targetH;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return file;
+      ctx.drawImage(img, 0, 0, targetW, targetH);
+
+      const blob: Blob | null = await new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', quality));
+      URL.revokeObjectURL(objectUrl);
+      if (!blob) return file;
+      return new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' });
+    } catch {
+      return file;
+    }
+  };
+
   const onSubmit = async (data: FormData) => {
+    if (submitting) return;
+    setSubmitting(true);
     try {
       console.log('Starting registration process with data:', {
         name: data.name,
@@ -101,15 +132,16 @@ export function RegistrationDialog({ children }: RegistrationDialogProps) {
         photoSize: data.photo.size
       });
 
-      // Upload photo to storage
-      const fileExt = data.photo.name.split('.').pop();
+      // Compress photo to speed up upload
+      const optimized = await compressImage(data.photo);
+      const fileExt = optimized.name.split('.').pop();
       const fileName = `${data.name.replace(/\s/g, '_')}_${Date.now()}.${fileExt}`;
       
       console.log('Uploading photo with filename:', fileName);
       
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('player-photos')
-        .upload(fileName, data.photo);
+        .upload(fileName, optimized, { cacheControl: '3600', upsert: true });
 
       if (uploadError) {
         console.error('Upload error:', uploadError);
@@ -137,15 +169,17 @@ export function RegistrationDialog({ children }: RegistrationDialogProps) {
         role_number: data.roleNumber,
         photo_url: publicUrl,
         position: data.position,
-        season1_team: data.season1Team,
+        season1_team: data.season1Team || null,
         achievement: (data.achievement?.trim() || null) as string | null,
       };
 
       console.log('Saving registration data:', registrationData);
 
-      const { error: dbError } = await supabase
+      const { data: inserted, error: dbError } = await supabase
         .from('player_registrations')
-        .insert([registrationData]);
+        .insert([registrationData])
+        .select('auction_number, name')
+        .single();
 
       if (dbError) {
         console.error('Database error:', dbError);
@@ -157,11 +191,38 @@ export function RegistrationDialog({ children }: RegistrationDialogProps) {
         return;
       }
 
-      console.log('Registration saved successfully');
+      console.log('Registration saved successfully', inserted);
+
+      // Send registration data to external webhook (non-blocking)
+      try {
+        const formDataToSend = new FormData();
+        formDataToSend.append('name', registrationData.name);
+        formDataToSend.append('class', registrationData.class);
+        formDataToSend.append('role_number', registrationData.role_number);
+        formDataToSend.append('position', registrationData.position);
+        if (registrationData.season1_team) formDataToSend.append('season1_team', registrationData.season1_team);
+        if (registrationData.achievement ?? '') formDataToSend.append('achievement', registrationData.achievement as string);
+        formDataToSend.append('photo_url', registrationData.photo_url || '');
+        if (inserted?.auction_number !== undefined && inserted?.auction_number !== null) {
+          formDataToSend.append('auction_number', String(inserted.auction_number));
+        }
+        formDataToSend.append('submitted_at', new Date().toISOString());
+        // Attach the actual image file so the webhook receives it as a file
+        formDataToSend.append('image', optimized, fileName);
+
+        void fetch('https://hook.eu2.make.com/ty8uwnudxlvreaguotsv3wu97bz1whbo', {
+          method: 'POST',
+          body: formDataToSend,
+        }).catch((e) => console.error('Webhook error:', e));
+      } catch (e) {
+        console.error('Failed to queue webhook:', e);
+      }
 
       toast({
         title: "Registration Submitted!",
-        description: "Your registration has been submitted successfully. We'll contact you soon!",
+        description: inserted?.auction_number
+          ? `Your Auction Number is ${inserted.auction_number}. We'll contact you soon!`
+          : "Your registration has been submitted successfully. We'll contact you soon!",
       });
       setOpen(false);
       form.reset();
@@ -172,6 +233,8 @@ export function RegistrationDialog({ children }: RegistrationDialogProps) {
         description: `An unexpected error occurred: ${error instanceof Error ? error.message : 'Unknown error'}`,
         variant: "destructive",
       });
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -327,8 +390,8 @@ export function RegistrationDialog({ children }: RegistrationDialogProps) {
               >
                 Cancel
               </Button>
-              <Button type="submit" className="flex-1">
-                Register
+              <Button type="submit" className="flex-1" disabled={submitting}>
+                {submitting ? 'Submitting...' : 'Register'}
               </Button>
             </div>
           </form>

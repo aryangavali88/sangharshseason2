@@ -133,7 +133,7 @@ export type Database = {
           photo_url?: string | null
           position: string
           role_number: string
-          season1_team: string
+          season1_team?: string
           updated_at?: string
         }
         Update: {

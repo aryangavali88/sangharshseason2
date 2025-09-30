@@ -100,6 +100,12 @@ const LiveAuction = () => {
     "Birje Blasters"
   ];
 
+  const canonicalizeTeam = (name: string | null | undefined) => {
+    const n = (name || '').toString().trim().toLowerCase().replace(/\s+/g, ' ');
+    if (n === 'pathak panthers') return 'patil panthers';
+    return n;
+  };
+
   const loadCurrentRound = async () => {
     try {
       const { data: rounds, error } = await supabase
@@ -206,7 +212,10 @@ const LiveAuction = () => {
       if (teamsError) throw teamsError;
 
       const initialMap: Record<string, number> = {};
-      (teamsData || []).forEach(t => { initialMap[t.name] = Number(t.initial_points) || 0; });
+      (teamsData || []).forEach(t => {
+        const key = canonicalizeTeam(t.name);
+        initialMap[key] = Number(t.initial_points) || 0;
+      });
       setTeamInitialPoints(initialMap);
 
       // Fetch all winning bids once
@@ -217,13 +226,14 @@ const LiveAuction = () => {
 
       const usedByTeam: Record<string, number> = {};
       (bidsData || []).filter(b => b.is_winning_bid).forEach(b => {
-        const team = b.team_name || '';
-        usedByTeam[team] = (usedByTeam[team] || 0) + Number(b.bid_amount || 0);
+        const teamKey = canonicalizeTeam(b.team_name || '');
+        usedByTeam[teamKey] = (usedByTeam[teamKey] || 0) + Number(b.bid_amount || 0);
       });
 
       const remaining: Record<string, number> = {};
-      Object.keys(initialMap).forEach(team => {
-        remaining[team] = Math.max(0, (initialMap[team] || 0) - (usedByTeam[team] || 0));
+      teams.forEach(displayName => {
+        const key = canonicalizeTeam(displayName);
+        remaining[displayName] = Math.max(0, (initialMap[key] || 0) - (usedByTeam[key] || 0));
       });
       setTeamRemainingPoints(remaining);
     } catch (e) {
@@ -527,7 +537,7 @@ const LiveAuction = () => {
         .insert({
           player_name: player.name,
           role_number: player.role_number,
-          season1_team: player.season1_team,
+          season1_team: player.season1_team || '',
           position: player.position,
           class: player.class,
           photo_url: player.photo_url,
@@ -673,9 +683,13 @@ const LiveAuction = () => {
         <div className="space-y-4 md:space-y-6 lg:col-span-1 order-2 lg:order-2">
           {/* Player Details */}
           <div className="text-center lg:text-left">
-            <h2 className="text-xl sm:text-2xl font-bold mb-1">Player: {currentPlayer.name || "N/A"}</h2>
+            <h2 className="text-xl sm:text-2xl font-bold mb-1">
+              Player: {currentPlayer.name || "N/A"}
+            </h2>
             {typeof currentPlayer.auctionNumber === 'number' && (
-              <p className="text-xs text-muted-foreground mb-1">Auction No: {currentPlayer.auctionNumber}</p>
+              <div className="inline-flex items-center gap-2 mb-1">
+                <Badge variant="secondary" className="text-xs">Auction #{currentPlayer.auctionNumber}</Badge>
+              </div>
             )}
             <p className="text-muted-foreground mb-2">{currentPlayer.role || "N/A"}</p>
             {currentPlayer.achievement && (
@@ -790,7 +804,7 @@ const LiveAuction = () => {
             <h3 className="text-lg sm:text-xl font-bold mb-4">Team Budgets</h3>
             <div className="space-y-3">
               {teams.map((team) => {
-                const total = teamInitialPoints[team] || 0;
+                const total = teamInitialPoints[canonicalizeTeam(team)] || teamInitialPoints[team] || 0;
                 const remaining = teamRemainingPoints[team] || 0;
                 const used = Math.max(0, total - remaining);
                 const percent = total > 0 ? Math.min(100, Math.round((used / total) * 100)) : 0;
