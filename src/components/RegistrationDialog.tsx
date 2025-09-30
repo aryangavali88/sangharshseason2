@@ -347,7 +347,7 @@ export function RegistrationDialog({ children }: RegistrationDialogProps) {
               name="season1Team"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Season 1 Team *</FormLabel>
+                  <FormLabel>Season 1 Team (optional)</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
