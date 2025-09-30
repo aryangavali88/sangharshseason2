@@ -1,0 +1,148 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Cricket-themed design system for Sangharsh Season 2 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Cricket field inspired colors */
+    --background: 0 0% 100%;
+    --foreground: 140 10% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 140 10% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 140 10% 15%;
+
+    /* Cricket green primary */
+    --primary: 142 71% 45%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 142 71% 65%;
+
+    /* Sky blue secondary */
+    --secondary: 200 95% 55%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 142 20% 95%;
+    --muted-foreground: 140 10% 45%;
+
+    --accent: 200 95% 55%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 142 20% 90%;
+    --input: 142 20% 95%;
+    --ring: 142 71% 45%;
+
+    --radius: 0.75rem;
+
+    /* Cricket-themed gradients */
+    --gradient-hero: linear-gradient(135deg, hsl(var(--primary)), hsl(142 71% 35%));
+    --gradient-field: linear-gradient(180deg, hsl(142 50% 95%), hsl(142 30% 90%));
+    --gradient-sky: linear-gradient(180deg, hsl(200 95% 85%), hsl(200 95% 55%));
+    
+    /* Cricket shadows */
+    --shadow-cricket: 0 10px 30px -10px hsl(var(--primary) / 0.3);
+    --shadow-glow: 0 0 40px hsl(var(--primary-glow) / 0.4);
+    
+    /* Smooth animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+      /* Sidebar styles */
+      --sidebar-background: 0 0% 98%;
+      --sidebar-foreground: 140 10% 15%;
+      --sidebar-primary: 142 71% 45%;
+      --sidebar-primary-foreground: 0 0% 100%;
+      --sidebar-accent: 142 20% 90%;
+      --sidebar-accent-foreground: 140 10% 15%;
+      --sidebar-border: 142 20% 85%;
+      --sidebar-ring: 142 71% 45%;
+  }
+
+  .dark {
+      /* Cricket field inspired dark colors */
+      --background: 140 10% 8%;
+      --foreground: 0 0% 95%;
+
+      --card: 140 10% 10%;
+      --card-foreground: 0 0% 95%;
+
+      --popover: 140 10% 10%;
+      --popover-foreground: 0 0% 95%;
+
+      /* Cricket green primary */
+      --primary: 142 71% 55%;
+      --primary-foreground: 140 10% 8%;
+      --primary-glow: 142 71% 75%;
+
+      /* Sky blue secondary */
+      --secondary: 200 95% 65%;
+      --secondary-foreground: 140 10% 8%;
+
+      --muted: 140 10% 15%;
+      --muted-foreground: 140 5% 60%;
+
+      --accent: 200 95% 65%;
+      --accent-foreground: 140 10% 8%;
+
+      --destructive: 0 84.2% 60.2%;
+      --destructive-foreground: 0 0% 100%;
+
+      --border: 140 10% 20%;
+      --input: 140 10% 15%;
+      --ring: 142 71% 55%;
+
+      /* Sidebar dark styles */
+      --sidebar-background: 140 10% 8%;
+      --sidebar-foreground: 0 0% 95%;
+      --sidebar-primary: 142 71% 55%;
+      --sidebar-primary-foreground: 140 10% 8%;
+      --sidebar-accent: 140 10% 15%;
+      --sidebar-accent-foreground: 0 0% 95%;
+      --sidebar-border: 140 10% 20%;
+      --sidebar-ring: 142 71% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    overflow-x: hidden;
+  }
+
+  html {
+    overflow-x: hidden;
+  }
+
+  #root {
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100vw;
+  }
+}
+
+@layer utilities {
+  /* Photo carousel animations */
+  @keyframes progress {
+    from {
+      width: 0%;
+    }
+    to {
+      width: 100%;
+    }
+  }
+  
+  .animate-progress {
+    animation: progress linear forwards;
+  }
+}
