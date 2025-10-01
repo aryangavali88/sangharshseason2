@@ -556,6 +556,27 @@ const LiveAuction = () => {
 
   return (
     <div className="w-full max-w-7xl mx-auto p-3 sm:p-4 md:p-6 space-y-6 md:space-y-8">
+      {/* Sticky Unsold Controls for guaranteed visibility */}
+      <div className="sticky top-0 z-20 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 py-2">
+        <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-4">
+          <Button 
+            variant="secondary"
+            disabled={!user}
+            onClick={startUnsoldRound}
+            className="w-full sm:w-auto"
+          >
+            Start Unsold Round
+          </Button>
+          <Button 
+            variant="secondary"
+            disabled={!user}
+            onClick={resetUnsoldPlayers}
+            className="w-full sm:w-auto"
+          >
+            Reset Unsold
+          </Button>
+        </div>
+      </div>
       {/* Auction Controls */}
       <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-4">
         <Button 
