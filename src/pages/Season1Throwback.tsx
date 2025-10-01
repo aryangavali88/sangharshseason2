@@ -17,11 +17,10 @@ import { useSeason1Photos } from "@/hooks/useSeason1Photos";
 const Season1Throwback = () => {
   const { photos: season1Photos, loading: photosLoading, error: photosError } = useSeason1Photos();
   const champions = {
-    team: "Storm Warriors",
-    captain: "Rohit Sharma",
-    points: 24,
-    wins: 12,
-    losses: 2
+    team: "Patak Panthers",
+    captain: "Rishikesh Rajput",
+    wins: 6,
+    losses: 1
   };
 
   const awardWinners = [
@@ -149,11 +148,7 @@ const Season1Throwback = () => {
         <CardContent className="text-center space-y-4 p-4 sm:p-6 !bg-transparent relative z-10">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold">{champions.team}</h2>
             <p className="text-lg sm:text-xl opacity-90">Captain: {champions.captain}</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 sm:gap-4 max-w-md mx-auto">
-              <div className="text-center">
-                <div className="text-xl sm:text-2xl font-bold">{champions.points}</div>
-                <div className="text-xs sm:text-sm opacity-80">Points</div>
-              </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 max-w-md mx-auto">
               <div className="text-center">
                 <div className="text-xl sm:text-2xl font-bold">{champions.wins}</div>
                 <div className="text-xs sm:text-sm opacity-80">Wins</div>
