@@ -438,7 +438,7 @@ const LiveAuction = () => {
       if (error) throw error;
       
       setCurrentRound('unsold');
-      fetchPlayer();
+      fetchPlayer('unsold');
     } catch (err) {
       console.error('Error starting unsold round:', err);
     }
@@ -477,13 +477,13 @@ const LiveAuction = () => {
         .update({ is_active: false })
         .eq('is_active', true);
       setCurrentRound('main');
-      fetchPlayer();
+      fetchPlayer('main');
     } catch (err) {
       console.error('Error returning to main round:', err);
     }
   };
 
-  const fetchPlayer = async () => {
+  const fetchPlayer = async (roundOverride?: 'main' | 'unsold') => {
     if (!user) return; // Only authenticated users can start auction
     
     setIsLoading(true);
@@ -506,7 +506,8 @@ const LiveAuction = () => {
         .not("name", "in", `(${auctionedPlayerNames.join(",")})`)
         .order("role_number", { ascending: true });
       
-      if (currentRound === 'unsold') {
+      const effectiveRound = roundOverride ?? currentRound;
+      if (effectiveRound === 'unsold') {
         playerQuery = playerQuery.eq('is_unsold', true);
       } else {
         playerQuery = playerQuery.eq('is_unsold', false);
@@ -634,6 +635,22 @@ const LiveAuction = () => {
           }}
         >
           Reset Auction
+        </Button>
+        <Button 
+          variant="secondary"
+          disabled={!user}
+          onClick={startUnsoldRound}
+          className="w-full sm:w-auto"
+        >
+          Start Unsold Round
+        </Button>
+        <Button 
+          variant="secondary"
+          disabled={!user}
+          onClick={resetUnsoldPlayers}
+          className="w-full sm:w-auto"
+        >
+          Reset Unsold
         </Button>
         <Button
           variant="outline"
