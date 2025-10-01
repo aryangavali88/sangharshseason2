@@ -883,31 +883,25 @@ const LiveAuction = () => {
 
       {error && <p className="text-destructive text-center text-sm">{error}</p>}
 
-      {/* Main Round Controls (end of page) */}
-      {currentRound === 'main' && (
-        <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-4 mt-4">
-          <Button 
-            variant="secondary"
-            disabled={!user}
-            onClick={startUnsoldRound}
-            className="w-full sm:w-auto"
-          >
-            Start Unsold Round
-          </Button>
-          <Button 
-            variant="secondary"
-            disabled={!user}
-            onClick={resetUnsoldPlayers}
-            className="w-full sm:w-auto"
-          >
-            Reset Unsold
-          </Button>
-        </div>
-      )}
-
-      {/* Unsold Round Controls (end of page) */}
-      {currentRound === 'unsold' && (
-        <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-4 mt-4">
+      {/* Persistent Bottom Controls */}
+      <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-4 mt-4">
+        <Button 
+          variant="secondary"
+          disabled={!user}
+          onClick={startUnsoldRound}
+          className="w-full sm:w-auto"
+        >
+          Start Unsold Round
+        </Button>
+        <Button 
+          variant="secondary"
+          disabled={!user}
+          onClick={resetUnsoldPlayers}
+          className="w-full sm:w-auto"
+        >
+          Reset Unsold
+        </Button>
+        {currentRound === 'unsold' && (
           <Button 
             variant="secondary"
             disabled={!user}
@@ -916,8 +910,8 @@ const LiveAuction = () => {
           >
             Return to Main Round
           </Button>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Auction Summary Dialog */}
       <Dialog open={showSummary} onOpenChange={setShowSummary}>
