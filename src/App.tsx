@@ -35,6 +35,11 @@ const App = () => (
                 <LiveAuction />
               </Layout>
             } />
+            <Route path="/live" element={
+              <Layout>
+                <LiveAuction />
+              </Layout>
+            } />
             <Route path="/teams" element={
               <Layout>
                 <Teams />
