@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search } from "lucide-react";
 import {
   Table,
@@ -22,6 +23,9 @@ type PlayerRow = Tables<"player_registrations">;
 export default function Players() {
   const [query, setQuery] = useState("");
   const [allPlayers, setAllPlayers] = useState<PlayerRow[]>([]);
+  const [soldPlayers, setSoldPlayers] = useState<Set<string>>(new Set());
+  const [statusFilter, setStatusFilter] = useState<'all' | 'sold' | 'unsold' | 'active'>('all');
+  const [girlPlayers, setGirlPlayers] = useState<Set<string>>(new Set());
 
   
 
@@ -42,6 +46,42 @@ export default function Players() {
       }
     };
     fetchPlayers();
+  }, []);
+
+  useEffect(() => {
+    const fetchSoldPlayers = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('auction_bids')
+          .select('player_name, is_winning_bid')
+          .eq('is_winning_bid', true);
+        if (error) throw error;
+        const names = new Set<string>((data || []).map(b => String(b.player_name)));
+        setSoldPlayers(names);
+      } catch (e) {
+        console.error('Error fetching sold players:', e);
+        setSoldPlayers(new Set());
+      }
+    };
+    fetchSoldPlayers();
+  }, []);
+
+  useEffect(() => {
+    const fetchGirlPlayers = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('player_registrations')
+          .select('name, is_girl')
+          .eq('is_girl', true);
+        if (error) throw error;
+        const names = new Set<string>((data || []).map(p => String(p.name)));
+        setGirlPlayers(names);
+      } catch (e) {
+        console.error('Error fetching girl players:', e);
+        setGirlPlayers(new Set());
+      }
+    };
+    fetchGirlPlayers();
   }, []);
 
   useEffect(() => {
@@ -90,10 +130,20 @@ export default function Players() {
   }, []);
 
   const rows = useMemo(() => {
-    if (!query) return allPlayers;
     const q = query.toLowerCase();
-    return allPlayers.filter((p) => [p.name, p.position].some((v) => v.toLowerCase().includes(q)));
-  }, [query, allPlayers]);
+    return allPlayers.filter((p) => {
+      const matchesQuery = !q || [p.name, p.position].some((v) => v.toLowerCase().includes(q));
+      const isSold = soldPlayers.has(p.name);
+      const isUnsold = !!p.is_unsold;
+      const isActive = !isSold && !isUnsold;
+      const matchesStatus =
+        statusFilter === 'all' ||
+        (statusFilter === 'sold' && isSold) ||
+        (statusFilter === 'unsold' && isUnsold) ||
+        (statusFilter === 'active' && isActive);
+      return matchesQuery && matchesStatus;
+    });
+  }, [query, allPlayers, soldPlayers, statusFilter]);
 
   return (
     <div className="px-6 py-8 space-y-8">
@@ -104,15 +154,30 @@ export default function Players() {
         </p>
       </div>
 
-      {/* Search */}
-      <div className="relative">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search players"
-          className="h-11 pl-10 rounded-xl bg-muted/40"
-        />
+      {/* Search + Status Filter */}
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+        <div className="relative flex-1">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search players"
+            className="h-11 pl-10 rounded-xl bg-muted/40"
+          />
+        </div>
+        <div className="w-full sm:w-56">
+          <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as any)}>
+            <SelectTrigger className="h-11 rounded-xl bg-muted/40">
+              <SelectValue placeholder="Filter status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All</SelectItem>
+              <SelectItem value="sold">Sold</SelectItem>
+              <SelectItem value="unsold">Unsold</SelectItem>
+              <SelectItem value="active">Active</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* Highest Bid Players */}
@@ -163,6 +228,7 @@ export default function Players() {
             <TableHeader>
               <TableRow>
                 <TableHead>Player</TableHead>
+                <TableHead>Role No</TableHead>
                 <TableHead>Position</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Stats</TableHead>
@@ -180,13 +246,21 @@ export default function Players() {
                       <span className="text-sm font-medium text-foreground">{p.name}</span>
                     </div>
                   </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">{p.role_number}</TableCell>
                   <TableCell className="text-sm text-muted-foreground">{p.position}</TableCell>
                   <TableCell>
-                    {p.is_unsold ? (
-                      <Badge variant="destructive" className="text-xs">Unsold</Badge>
-                    ) : (
-                      <Badge variant="secondary" className="text-xs">Active</Badge>
-                    )}
+                    <div className="flex flex-wrap gap-1">
+                      {soldPlayers.has(p.name) ? (
+                        <Badge variant="secondary" className="text-xs">Sold</Badge>
+                      ) : p.is_unsold ? (
+                        <Badge variant="destructive" className="text-xs">Unsold</Badge>
+                      ) : (
+                        <Badge variant="secondary" className="text-xs">Active</Badge>
+                      )}
+                      {girlPlayers.has(p.name) && (
+                        <Badge variant="outline" className="text-xs">Girls</Badge>
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell>
                     <PlayerStatsPopover roleNumber={p.role_number} playerName={p.name} />

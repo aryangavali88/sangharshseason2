@@ -35,9 +35,22 @@ const Teams = () => {
   const [selectedTeam, setSelectedTeam] = useState<{ name: string; initialPoints: number } | null>(null);
   const { toast } = useToast();
 
+  const canonicalizeTeam = (name: string | null | undefined) => {
+    const n = (name || '').toString().trim().toLowerCase().replace(/\s+/g, ' ');
+    if (n === 'pathak panthers') return 'patil panthers';
+    if (n === 'navagekar strikers') return 'navgekar strikers';
+    if (n === 'navegekar stickers') return 'navgekar strikers';
+    if (n === 'navegekar strikers') return 'navgekar strikers';
+    if (n === 'navgekar stickers') return 'navgekar strikers';
+    if (n === 'brije blasters') return 'birje blasters';
+    return n;
+  };
+
   const getDisplayTeamName = (name: string) => {
     if (name === "Brije Blasters") return "BIRJE BLASTERS";
     if (name === "Pathak Panthers") return "PATIL PANTHERS";
+    if (name === "Navagekar Strikers") return "NAVGEKAR STRIKERS";
+    if (name === "Navegekar Stickers") return "NAVGEKAR STRIKERS";
     return name.toUpperCase();
   };
 
@@ -57,30 +70,31 @@ const Teams = () => {
 
       if (teamsError) throw teamsError;
 
-      // Fetch winning bids for each team
-      const teamsWithStats = await Promise.all(
-        (teamsData || []).map(async (team) => {
-          const { data: bidsData, error: bidsError } = await supabase
-            .from('auction_bids')
-            .select('bid_amount')
-            .eq('team_name', team.name)
-            .eq('is_winning_bid', true);
+      // Fetch all winning bids once and aggregate by canonical team name
+      const { data: allWinningBids, error: bidsError } = await supabase
+        .from('auction_bids')
+        .select('team_name,bid_amount,is_winning_bid');
+      if (bidsError) throw bidsError;
 
-          if (bidsError) {
-            console.error(`Error fetching bids for ${team.name}:`, bidsError);
-          }
+      const usedByTeam: Record<string, number> = {};
+      const countByTeam: Record<string, number> = {};
+      (allWinningBids || []).filter(b => b.is_winning_bid).forEach(b => {
+        const key = canonicalizeTeam(b.team_name as string);
+        usedByTeam[key] = (usedByTeam[key] || 0) + Number(b.bid_amount || 0);
+        countByTeam[key] = (countByTeam[key] || 0) + 1;
+      });
 
-          const usedPoints = (bidsData || []).reduce((sum, bid) => sum + Number(bid.bid_amount), 0);
-          const playersCount = (bidsData || []).length;
-
-          return {
-            ...team,
-            used_points: usedPoints,
-            remaining_points: team.initial_points - usedPoints,
-            players_count: playersCount
-          };
-        })
-      );
+      const teamsWithStats = (teamsData || []).map(team => {
+        const key = canonicalizeTeam(team.name);
+        const usedPoints = usedByTeam[key] || 0;
+        const playersCount = countByTeam[key] || 0;
+        return {
+          ...team,
+          used_points: usedPoints,
+          remaining_points: team.initial_points - usedPoints,
+          players_count: playersCount
+        } as TeamWithStats;
+      });
 
       setTeams(teamsWithStats);
     } catch (error) {

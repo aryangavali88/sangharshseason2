@@ -24,6 +24,17 @@ export function TeamDetailsDialog({ open, onOpenChange, teamName, initialPoints 
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
+  const canonicalizeTeam = (name: string | null | undefined) => {
+    const n = (name || '').toString().trim().toLowerCase().replace(/\s+/g, ' ');
+    if (n === 'pathak panthers') return 'patil panthers';
+    if (n === 'navagekar strikers') return 'navgekar strikers';
+    if (n === 'navegekar stickers') return 'navgekar strikers';
+    if (n === 'navegekar strikers') return 'navgekar strikers';
+    if (n === 'navgekar stickers') return 'navgekar strikers';
+    if (n === 'brije blasters') return 'birje blasters';
+    return n;
+  };
+
   useEffect(() => {
     if (open && teamName) {
       loadTeamPlayers();
@@ -35,13 +46,16 @@ export function TeamDetailsDialog({ open, onOpenChange, teamName, initialPoints 
       setLoading(true);
       const { data, error } = await supabase
         .from('auction_bids')
-        .select('player_name, bid_amount, created_at')
-        .eq('team_name', teamName)
-        .eq('is_winning_bid', true)
-        .order('bid_amount', { ascending: false });
+        .select('player_name, bid_amount, created_at, team_name, is_winning_bid')
+        .eq('is_winning_bid', true);
 
       if (error) throw error;
-      setPlayers(data || []);
+      const key = canonicalizeTeam(teamName);
+      const filtered = (data || [])
+        .filter(row => canonicalizeTeam(row.team_name as string) === key)
+        .sort((a, b) => Number(b.bid_amount) - Number(a.bid_amount))
+        .map(({ player_name, bid_amount, created_at }) => ({ player_name, bid_amount, created_at }));
+      setPlayers(filtered);
     } catch (error) {
       console.error('Error loading team players:', error);
       toast({

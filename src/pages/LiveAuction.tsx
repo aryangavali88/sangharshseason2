@@ -42,6 +42,10 @@ const LiveAuction = () => {
   // Remaining points per team
   const [teamRemainingPoints, setTeamRemainingPoints] = useState<Record<string, number>>({});
   const [teamInitialPoints, setTeamInitialPoints] = useState<Record<string, number>>({});
+  const [remainingGirls, setRemainingGirls] = useState<number>(0);
+
+  // Image preview state
+  const [showImagePreview, setShowImagePreview] = useState(false);
 
   // Load bids, current player, team remaining points, and current round
   useEffect(() => {
@@ -103,6 +107,11 @@ const LiveAuction = () => {
   const canonicalizeTeam = (name: string | null | undefined) => {
     const n = (name || '').toString().trim().toLowerCase().replace(/\s+/g, ' ');
     if (n === 'pathak panthers') return 'patil panthers';
+    // Normalize Navgekar Strikers misspellings
+    if (n === 'navagekar strikers') return 'navgekar strikers';
+    if (n === 'navegekar stickers') return 'navgekar strikers';
+    if (n === 'navegekar strikers') return 'navgekar strikers';
+    if (n === 'navgekar stickers') return 'navgekar strikers';
     return n;
   };
 
@@ -282,6 +291,15 @@ const LiveAuction = () => {
         if (arErr) throw arErr;
         const remainingTotal = (batsCount || 0) + (bowlCount || 0) + (wkCount || 0) + (arCount || 0);
         setRemainingByRole({ batsman: batsCount || 0, bowler: bowlCount || 0, wicketKeeper: wkCount || 0, allRounder: arCount || 0, total: remainingTotal });
+
+        // Remaining girls (flag-based)
+        const { count: girlsCount, error: girlsErr } = await supabase
+          .from('player_registrations')
+          .select('*', { count: 'exact', head: true })
+          .eq('is_girl', true)
+          .not('name', 'in', `(${soldNames.join(',') || ''})`);
+        if (girlsErr) throw girlsErr;
+        setRemainingGirls(girlsCount || 0);
       } catch (e: any) {
         console.error('Error computing summary:', e);
         setSummaryError(e?.message || 'Failed to compute auction summary.');
@@ -504,6 +522,7 @@ const LiveAuction = () => {
         .from("player_registrations")
         .select("*")
         .not("name", "in", `(${auctionedPlayerNames.join(",")})`)
+        .order("auction_number", { ascending: true })
         .order("role_number", { ascending: true });
       
       if (currentRound === 'unsold') {
@@ -667,7 +686,8 @@ const LiveAuction = () => {
             <img 
               src={currentPlayer.image} 
               alt={currentPlayer.name}
-              className="w-full max-w-sm h-[20rem] sm:h-[24rem] lg:h-[32rem] object-cover rounded-lg shadow-lg"
+              className="w-full max-w-sm h-[20rem] sm:h-[24rem] lg:h-[32rem] object-cover rounded-lg shadow-lg cursor-zoom-in"
+              onClick={() => setShowImagePreview(true)}
               onError={(e) => {
                 e.currentTarget.src = cricketPlayerAction;
               }}
@@ -808,6 +828,7 @@ const LiveAuction = () => {
                 const remaining = teamRemainingPoints[team] || 0;
                 const used = Math.max(0, total - remaining);
                 const percent = total > 0 ? Math.min(100, Math.round((used / total) * 100)) : 0;
+                const playersCount = winningBids.filter(b => canonicalizeTeam(b.teamName) === canonicalizeTeam(team)).length;
                 return (
                   <Card key={team} className="p-3">
                     <div className="flex items-center justify-between mb-1">
@@ -818,6 +839,7 @@ const LiveAuction = () => {
                       <div className="h-2 rounded bg-green-500" style={{ width: `${percent}%` }} />
                     </div>
                     <div className="text-xs text-muted-foreground mt-1">Remaining: <span className="text-foreground font-medium">{remaining.toLocaleString()}</span></div>
+                    <div className="text-xs text-muted-foreground">Players purchased: <span className="text-foreground font-medium">{playersCount}</span></div>
                   </Card>
                 );
               })}
@@ -917,10 +939,11 @@ const LiveAuction = () => {
               <h4 className="text-sm font-semibold mb-2">Team Budgets</h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {teams.map((team) => {
-                  const total = teamInitialPoints[team] || 0;
+                  const total = teamInitialPoints[canonicalizeTeam(team)] || teamInitialPoints[team] || 0;
                   const remaining = teamRemainingPoints[team] || 0;
                   const used = Math.max(0, total - remaining);
                   const percent = total > 0 ? Math.min(100, Math.round((used / total) * 100)) : 0;
+                  const playersCount = winningBids.filter(b => canonicalizeTeam(b.teamName) === canonicalizeTeam(team)).length;
                   return (
                     <Card key={team} className="p-3">
                       <div className="flex items-center justify-between mb-1">
@@ -931,6 +954,7 @@ const LiveAuction = () => {
                         <div className="h-2 rounded bg-green-500" style={{ width: `${percent}%` }} />
                       </div>
                       <div className="text-xs text-muted-foreground mt-1">Remaining: <span className="text-foreground font-medium">{remaining.toLocaleString()}</span></div>
+                      <div className="text-xs text-muted-foreground">Players purchased: <span className="text-foreground font-medium">{playersCount}</span></div>
                     </Card>
                   );
                 })}
@@ -940,10 +964,11 @@ const LiveAuction = () => {
             {/* Remaining Players */}
             <div>
               <h4 className="text-sm font-semibold mb-2">Remaining Players</h4>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-center">
                 <Card className="p-3"><p className="text-xs text-muted-foreground">Batsmen</p><p className="text-lg font-bold">{remainingByRole.batsman}</p></Card>
                 <Card className="p-3"><p className="text-xs text-muted-foreground">Bowlers</p><p className="text-lg font-bold">{remainingByRole.bowler}</p></Card>
                 <Card className="p-3"><p className="text-xs text-muted-foreground">All Rounders</p><p className="text-lg font-bold">{remainingByRole.allRounder}</p></Card>
+                <Card className="p-3"><p className="text-xs text-muted-foreground">Girls</p><p className="text-lg font-bold">{remainingGirls}</p></Card>
               </div>
               <p className="text-xs text-muted-foreground mt-2 text-center">Total remaining: <span className="text-foreground font-medium">{remainingByRole.total}</span></p>
             </div>
@@ -963,6 +988,22 @@ const LiveAuction = () => {
                 <p className="text-sm text-muted-foreground">No winning bids yet.</p>
               )}
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Image Preview Dialog */}
+      <Dialog open={showImagePreview} onOpenChange={setShowImagePreview}>
+        <DialogContent className="max-w-5xl w-full max-h-[90vh] p-0 overflow-hidden">
+          <div className="bg-black flex items-center justify-center">
+            <img
+              src={currentPlayer.image}
+              alt={currentPlayer.name}
+              className="w-full h-auto max-h-[88vh] object-contain"
+              onError={(e) => {
+                e.currentTarget.src = cricketPlayerAction;
+              }}
+            />
           </div>
         </DialogContent>
       </Dialog>
