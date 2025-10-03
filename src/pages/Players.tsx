@@ -24,7 +24,7 @@ export default function Players() {
   const [query, setQuery] = useState("");
   const [allPlayers, setAllPlayers] = useState<PlayerRow[]>([]);
   const [soldPlayers, setSoldPlayers] = useState<Set<string>>(new Set());
-  const [statusFilter, setStatusFilter] = useState<'all' | 'sold' | 'unsold' | 'active'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'sold' | 'unsold' | 'active' | 'girls'>('all');
   const [girlPlayers, setGirlPlayers] = useState<Set<string>>(new Set());
 
   
@@ -136,14 +136,16 @@ export default function Players() {
       const isSold = soldPlayers.has(p.name);
       const isUnsold = !!p.is_unsold;
       const isActive = !isSold && !isUnsold;
+      const isGirl = girlPlayers.has(p.name);
       const matchesStatus =
         statusFilter === 'all' ||
         (statusFilter === 'sold' && isSold) ||
         (statusFilter === 'unsold' && isUnsold) ||
-        (statusFilter === 'active' && isActive);
+        (statusFilter === 'active' && isActive) ||
+        (statusFilter === 'girls' && isGirl);
       return matchesQuery && matchesStatus;
     });
-  }, [query, allPlayers, soldPlayers, statusFilter]);
+  }, [query, allPlayers, soldPlayers, statusFilter, girlPlayers]);
 
   return (
     <div className="px-6 py-8 space-y-8">
@@ -175,6 +177,7 @@ export default function Players() {
               <SelectItem value="sold">Sold</SelectItem>
               <SelectItem value="unsold">Unsold</SelectItem>
               <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="girls">Girls</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -228,9 +231,9 @@ export default function Players() {
             <TableHeader>
               <TableRow>
                 <TableHead>Player</TableHead>
-                <TableHead>Role No</TableHead>
                 <TableHead>Position</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Role No</TableHead>
                 <TableHead>Stats</TableHead>
               </TableRow>
             </TableHeader>
@@ -246,7 +249,6 @@ export default function Players() {
                       <span className="text-sm font-medium text-foreground">{p.name}</span>
                     </div>
                   </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">{p.role_number}</TableCell>
                   <TableCell className="text-sm text-muted-foreground">{p.position}</TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-1">
@@ -262,6 +264,7 @@ export default function Players() {
                       )}
                     </div>
                   </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">{p.role_number}</TableCell>
                   <TableCell>
                     <PlayerStatsPopover roleNumber={p.role_number} playerName={p.name} />
                   </TableCell>
