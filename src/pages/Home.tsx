@@ -50,7 +50,7 @@ const Home = () => {
   const highlights = [{
     title: "Live Auction",
     description: "Join live auction and bid for your favorite players in real-time.",
-    image: cricketPlayerAction,
+    image: "https://dlavwfhzuiliggiwbowp.supabase.co/storage/v1/object/public/season%201%20photos/image-11.png",
     link: "/live-auction"
   }, {
     title: "Team Management",
