@@ -17,7 +17,7 @@ import { useSeason1Photos } from "@/hooks/useSeason1Photos";
 const Season1Throwback = () => {
   const { photos: season1Photos, loading: photosLoading, error: photosError } = useSeason1Photos();
   const champions = {
-    team: "Patak Panthers",
+    team: "PATAK PANTHERS",
     captain: "Rishikesh Rajput",
     wins: 6,
     losses: 1
@@ -28,28 +28,28 @@ const Season1Throwback = () => {
       id: 1,
       award: "Man of the Series",
       winner: "Kedar",
-      team: "Navgekar Stickers",
+      team: "NAVGEKAR STRIKERS",
       photo: "https://dlavwfhzuiliggiwbowp.supabase.co/storage/v1/object/public/award%20winners/man%20of%20the%20series.png",
     },
     {
       id: 2,
       award: "Best Batsman",
       winner: "Dhurv",
-      team: "Pathak Panthers",
+      team: "PATHAK PANTHERS",
       photo: "https://dlavwfhzuiliggiwbowp.supabase.co/storage/v1/object/public/award%20winners/best%20batsman.png",
     },
     {
       id: 3,
       award: "Best Bowler",
       winner: "Akash",
-      team: "Pathak Panthers",
+      team: "PATHAK PANTHERS",
       photo: "https://dlavwfhzuiliggiwbowp.supabase.co/storage/v1/object/public/award%20winners/best%20bowler.png",
     },
     {
       id: 4,
       award: "Best Girl Player",
       winner: "Diksha",
-      team: "Navgekar Stickers",
+      team: "NAVGEKAR STRIKERS",
       photo: "https://dlavwfhzuiliggiwbowp.supabase.co/storage/v1/object/public/award%20winners/best%20girl.png",
     },
   ];
@@ -57,27 +57,27 @@ const Season1Throwback = () => {
   const memorableMatches = [
     {
       id: 1,
-      title: "Pathak Panthers vs GUPTE GLADIATORS",
-      teams: "Pathak Panthers vs GUPTE GLADIATORS",
-      score: "Pathak Panthers won by 5 runs (76/3 vs 71/1)",
+      title: "PATHAK PANTHERS VS GUPTE GLADIATORS",
+      teams: "PATHAK PANTHERS VS GUPTE GLADIATORS",
+      score: "PATHAK PANTHERS WON BY 5 RUNS (76/3 VS 71/1)",
       date: "Nov 26, 2024 • Gogte College Of Commerce, Belgaum",
       description: "Blazing knocks from Dhruv Desai 58(21) and Pratham Mastamardi 53(21) lit up a high-scoring 5-over thriller.",
       pdfUrl: "https://dlavwfhzuiliggiwbowp.supabase.co/storage/v1/object/public/best%20matches/Summary%20Scorecard%2013596211.pdf"
     },
     {
       id: 2,
-      title: "Joshi Warriors vs The Aurwadkars",
-      teams: "Joshi Warriors vs The Aurwadkars",
-      score: "Joshi Warriors won by 4 runs (71/5 vs 67/3)",
+      title: "JOSHI WARRIORS VS THE AURWADKARS",
+      teams: "JOSHI WARRIORS VS THE AURWADKARS",
+      score: "JOSHI WARRIORS WON BY 4 RUNS (71/5 VS 67/3)",
       date: "Nov 27, 2024 • Gogte College Of Commerce, Belgaum",
       description: "Aryan A Gavali smashed 48(18) with 5 sixes, leading Joshi Warriors to a narrow win. Best bowling came from Anup Deshpande 2/2.",
       pdfUrl: "https://dlavwfhzuiliggiwbowp.supabase.co/storage/v1/object/public/best%20matches/Summary%20Scorecard%2013596219.pdf"
     },
     {
       id: 3,
-      title: "Pathak Panthers vs Navgekar Strikers",
-      teams: "Pathak Panthers vs Navgekar Strikers",
-      score: "Pathak Panthers won by 19 runs (101/3 vs 82/2)",
+      title: "PATHAK PANTHERS VS NAVGEKAR STRIKERS",
+      teams: "PATHAK PANTHERS VS NAVGEKAR STRIKERS",
+      score: "PATHAK PANTHERS WON BY 19 RUNS (101/3 VS 82/2)",
       date: "Nov 28, 2024 • Gogte College Of Commerce, Belgaum",
       description: "A rapid finish from Md Huzaifa A 37(8) and a captain’s 33(18) from Rishikesh Rajput powered a 6-over 101; tight bowling led by Akash Huchappagol 2-0-5-1 sealed the defense.",
       pdfUrl: "https://dlavwfhzuiliggiwbowp.supabase.co/storage/v1/object/public/best%20matches/Summary%20Scorecard%2013712176.pdf"
@@ -85,12 +85,12 @@ const Season1Throwback = () => {
   ];
 
   const teamStandings = [
-    { position: 1, team: "Navgekar Stickers", matches: 5, wins: 5, losses: 0, points: 10, nrr: "8.274", last5: "W-W-W-W-W" },
-    { position: 2, team: "Pathak Panthers", matches: 5, wins: 4, losses: 1, points: 8, nrr: "7.800", last5: "L-W-W-W-W" },
-    { position: 3, team: "Joshi Warriors", matches: 5, wins: 3, losses: 2, points: 6, nrr: "-4.624", last5: "W-W-L-L-W" },
-    { position: 4, team: "The Aurwadkars", matches: 5, wins: 2, losses: 3, points: 4, nrr: "-2.168", last5: "W-L-W-L-L" },
+    { position: 1, team: "NAVGEKAR STRIKERS", matches: 5, wins: 5, losses: 0, points: 10, nrr: "8.274", last5: "W-W-W-W-W" },
+    { position: 2, team: "PATHAK PANTHERS", matches: 5, wins: 4, losses: 1, points: 8, nrr: "7.800", last5: "L-W-W-W-W" },
+    { position: 3, team: "JOSHI WARRIORS", matches: 5, wins: 3, losses: 2, points: 6, nrr: "-4.624", last5: "W-W-L-L-W" },
+    { position: 4, team: "THE AURWADKARS", matches: 5, wins: 2, losses: 3, points: 4, nrr: "-2.168", last5: "W-L-W-L-L" },
     { position: 5, team: "GUPTE GLADIATORS", matches: 5, wins: 1, losses: 4, points: 2, nrr: "-2.438", last5: "L-L-L-W-L" },
-    { position: 6, team: "Brije Blasters", matches: 5, wins: 0, losses: 5, points: 0, nrr: "-6.974", last5: "L-L-L-L-L" }
+    { position: 6, team: "BRIJE BLASTERS", matches: 5, wins: 0, losses: 5, points: 0, nrr: "-6.974", last5: "L-L-L-L-L" }
   ];
 
   // Static gallery photos from recent uploads

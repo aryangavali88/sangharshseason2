@@ -54,12 +54,12 @@ const formSchema = z.object({
 type FormData = z.infer<typeof formSchema>;
 
 const teams = [
-  { value: "mumbai-mavericks", label: "Navgekar Stickers" },
-  { value: "chennai-champions", label: "Pathak Panthers" },
-  { value: "kolkata-knights", label: "Joshi Warriors" },
-  { value: "delhi-dynamos", label: "The Aurwadkars" },
+  { value: "mumbai-mavericks", label: "NAVGEKAR STRIKERS" },
+  { value: "chennai-champions", label: "PATIL PANTHERS" },
+  { value: "kolkata-knights", label: "JOSHI WARRIORS" },
+  { value: "delhi-dynamos", label: "THE AURWADKARS" },
   { value: "bangalore-blazers", label: "GUPTE GLADIATORS" },
-  { value: "rajasthan-royals", label: "Birje Blasters" },
+  { value: "rajasthan-royals", label: "BIRJE BLASTERS" },
 ];
 
 const positions = [

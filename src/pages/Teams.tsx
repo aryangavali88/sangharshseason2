@@ -36,9 +36,9 @@ const Teams = () => {
   const { toast } = useToast();
 
   const getDisplayTeamName = (name: string) => {
-    if (name === "Brije Blasters") return "Birje Blasters";
-    if (name === "Pathak Panthers") return "Patil Panthers";
-    return name;
+    if (name === "Brije Blasters") return "BIRJE BLASTERS";
+    if (name === "Pathak Panthers") return "PATIL PANTHERS";
+    return name.toUpperCase();
   };
 
   useEffect(() => {

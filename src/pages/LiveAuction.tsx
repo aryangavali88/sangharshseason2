@@ -92,12 +92,12 @@ const LiveAuction = () => {
   }, []);
 
   const teams = [
-    "Navgekar Stickers",
-    "Patil Panthers",
-    "Joshi Warriors",
-    "The Aurwadkars",
+    "NAVGEKAR STRIKERS",
+    "PATIL PANTHERS",
+    "JOSHI WARRIORS",
+    "THE AURWADKARS",
     "GUPTE GLADIATORS",
-    "Birje Blasters"
+    "BIRJE BLASTERS"
   ];
 
   const canonicalizeTeam = (name: string | null | undefined) => {

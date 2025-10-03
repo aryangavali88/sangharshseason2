@@ -66,12 +66,12 @@ const Home = () => {
 
   // Team logos for LogoLoop component - using actual team logos
   const teamLogos = [
-    { src: "/team-logos/Aurwadkar_20241016_024702_0000.png", alt: "The Aurwadkar's" },
-    { src: "/team-logos/Birdje_20241016_021955_0000.png", alt: "Birje Champions" },
-    { src: "/team-logos/Joshi_20241016_022134_0000.png", alt: "Joshi Warriors" },
-    { src: "/team-logos/Navgekar_20241016_022103_0000.png", alt: "Navgekar Strikers" },
-    { src: "/team-logos/patil_panthers.png", alt: "Patil Panthers" },
-    { src: "/team-logos/Red-Represents-A-Combination-Of-Spartan-Helmet-Logo_20241016_022337_0000.png", alt: "Gupte" }
+    { src: "/team-logos/Aurwadkar_20241016_024702_0000.png", alt: "THE AURWADKARS" },
+    { src: "/team-logos/Birdje_20241016_021955_0000.png", alt: "BIRJE BLASTERS" },
+    { src: "/team-logos/Joshi_20241016_022134_0000.png", alt: "JOSHI WARRIORS" },
+    { src: "/team-logos/Navgekar_20241016_022103_0000.png", alt: "NAVGEKAR STRIKERS" },
+    { src: "/team-logos/patil_panthers.png", alt: "PATIL PANTHERS" },
+    { src: "/team-logos/Red-Represents-A-Combination-Of-Spartan-Helmet-Logo_20241016_022337_0000.png", alt: "GUPTE GLADIATORS" }
   ];
   return <div className="min-h-screen w-screen overflow-x-hidden">
       {/* Hero Section */}
