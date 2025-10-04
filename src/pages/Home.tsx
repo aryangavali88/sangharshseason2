@@ -1,12 +1,8 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Users, Gavel } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { RegistrationDialog } from "@/components/RegistrationDialog";
 import { useSeason1Photos } from "@/hooks/useSeason1Photos";
 import { PhotoCarousel } from "@/components/PhotoCarousel";
 import { LogoLoop } from "@/components/LogoLoop";
@@ -17,22 +13,6 @@ import cricketTrophy from "@/assets/cricket-trophy.jpg";
 const Home = () => {
   const { photos: season1Photos, loading: photosLoading } = useSeason1Photos();
   const [registrationCount, setRegistrationCount] = useState<number | null>(null);
-  const [formData, setFormData] = useState({
-    fullName: "",
-    email: "",
-    password: ""
-  });
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Registration data:", formData);
-    // Handle registration logic here
-  };
 
   useEffect(() => {
     const fetchRegistrationCount = async () => {
@@ -88,11 +68,9 @@ const Home = () => {
             Join the most exciting cricket tournament and bid for your favorite players. 
             Compete for glory and win amazing prizes!
           </p>
-          <RegistrationDialog>
-            <Button size="lg" className="bg-primary hover:bg-primary/90 text-white font-semibold px-6 sm:px-8 py-2 sm:py-3 shadow-glow text-sm sm:text-base">
-              Register Now
-            </Button>
-          </RegistrationDialog>
+          <div className="bg-red-600 hover:bg-red-700 text-white font-semibold px-6 sm:px-8 py-2 sm:py-3 shadow-lg text-sm sm:text-base rounded-md cursor-not-allowed opacity-75">
+            Registration Closed
+          </div>
         </div>
       </section>
 
