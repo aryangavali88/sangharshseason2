@@ -432,6 +432,25 @@ const LiveAuction = () => {
       fetchPlayer();
     } catch (err) {
       console.error('Error marking player as unsold:', err);
+      setError('Failed to mark player as unsold. Please try again.');
+    }
+  };
+
+  const handleNotInterested = async () => {
+    if (!user || !activePlayer) return;
+    
+    try {
+      console.log(`Skipping player: ${activePlayer.name} (role_number: ${activePlayer.role_number}, auction_number: ${activePlayer.auction_number}) in ${currentRound} round`);
+      
+      // Show brief feedback
+      setError(null); // Clear any existing errors
+      
+      // Simply move to next player without changing any status
+      // This is useful in unsold round to skip players that teams are not interested in
+      await fetchPlayer();
+    } catch (err) {
+      console.error('Error skipping player:', err);
+      setError('Failed to skip player. Please try again.');
     }
   };
 
@@ -507,7 +526,7 @@ const LiveAuction = () => {
     setIsLoading(true);
     setError(null);
     try {
-      // Get already auctioned players
+      // Get already auctioned players (only exclude players who have been sold in the main round)
       const { data: winningBids, error: winningBidsError } = await supabase
         .from('auction_bids')
         .select('player_name')
@@ -517,18 +536,50 @@ const LiveAuction = () => {
       
       const auctionedPlayerNames = winningBids?.map(bid => bid.player_name) || [];
       
+      // Get current auction player to determine which player to skip
+      const { data: currentAuctionPlayer } = await supabase
+        .from('current_auction_player')
+        .select('role_number')
+        .eq('is_active', true)
+        .limit(1)
+        .maybeSingle();
+      
+      // Get the auction_number of the current player for proper ordering
+      let currentAuctionNumber = null;
+      if (currentAuctionPlayer?.role_number) {
+        const { data: currentPlayerData } = await supabase
+          .from('player_registrations')
+          .select('auction_number')
+          .eq('role_number', currentAuctionPlayer.role_number)
+          .single();
+        currentAuctionNumber = currentPlayerData?.auction_number;
+        console.log(`Current player auction_number: ${currentAuctionNumber}`);
+      }
+      
       // Get next available player based on current round
       let playerQuery = supabase
         .from("player_registrations")
         .select("*")
         .not("name", "in", `(${auctionedPlayerNames.join(",")})`)
-        .order("auction_number", { ascending: true })
-        .order("role_number", { ascending: true });
+        .order("auction_number", { ascending: true });
       
       if (currentRound === 'unsold') {
+        // In unsold round, show players who were marked as unsold in the main round
+        // These players can be bid on again
         playerQuery = playerQuery.eq('is_unsold', true);
+        
+        // If we have a current player, skip to the next one using auction_number
+        if (currentAuctionNumber !== null) {
+          playerQuery = playerQuery.gt('auction_number', currentAuctionNumber);
+        }
       } else {
+        // In main round, show players who haven't been marked as unsold yet
         playerQuery = playerQuery.eq('is_unsold', false);
+        
+        // If we have a current player, skip to the next one using auction_number
+        if (currentAuctionNumber !== null) {
+          playerQuery = playerQuery.gt('auction_number', currentAuctionNumber);
+        }
       }
       
       const { data: player, error: playerError } = await playerQuery
@@ -536,11 +587,43 @@ const LiveAuction = () => {
         .single();
 
       if (playerError) {
+        // If no next player found, try getting the first available player
+        if (playerError.code === 'PGRST116') {
+          const { data: firstPlayer, error: firstPlayerError } = await supabase
+            .from("player_registrations")
+            .select("*")
+            .not("name", "in", `(${auctionedPlayerNames.join(",")})`)
+            .eq('is_unsold', currentRound === 'unsold')
+            .order("auction_number", { ascending: true })
+            .limit(1)
+            .single();
+          
+          if (firstPlayerError) {
+            throw firstPlayerError;
+          }
+          
+          if (!firstPlayer) {
+            if (currentRound === 'unsold') {
+              setError("No unsold players found. All unsold players may have been auctioned.");
+            } else {
+              setError("No players found or all players auctioned.");
+            }
+            return;
+          }
+          
+          // Use the first available player
+          await updateCurrentAuctionPlayer(firstPlayer);
+          return;
+        }
         throw playerError;
       }
 
       if (!player) {
-        setError("No players found or all players auctioned.");
+        if (currentRound === 'unsold') {
+          setError("No unsold players found. All unsold players may have been auctioned.");
+        } else {
+          setError("No players found or all players auctioned.");
+        }
         return;
       }
 
@@ -570,6 +653,29 @@ const LiveAuction = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const updateCurrentAuctionPlayer = async (player: any) => {
+    // Clear any existing current auction player
+    await supabase
+      .from('current_auction_player')
+      .delete()
+      .neq('id', '00000000-0000-0000-0000-000000000000');
+
+    // Insert new current auction player
+    const { error: insertError } = await supabase
+      .from('current_auction_player')
+      .insert({
+        player_name: player.name,
+        role_number: player.role_number,
+        season1_team: player.season1_team || '',
+        position: player.position,
+        class: player.class,
+        photo_url: player.photo_url,
+        is_active: true
+      });
+
+    if (insertError) throw insertError;
   };
 
   return (
@@ -717,7 +823,9 @@ const LiveAuction = () => {
             )}
             {activePlayer?.is_unsold && (
               <div className="inline-flex items-center gap-2 mb-2">
-                <Badge variant="destructive" className="text-xs">Unsold</Badge>
+                <Badge variant="destructive" className="text-xs">
+                  {currentRound === 'unsold' ? 'Available for Unsold Round' : 'Unsold'}
+                </Badge>
               </div>
             )}
             <p className="text-primary font-semibold">Base Price: {currentPlayer.basePrice.toLocaleString()} Points</p>
@@ -809,9 +917,10 @@ const LiveAuction = () => {
                 variant="outline"
                 disabled={!user}
                 className="h-9 text-sm w-full sm:w-auto"
-                onClick={handleUnsold}
+                onClick={currentRound === 'unsold' ? handleNotInterested : handleUnsold}
+                title={currentRound === 'unsold' ? 'Skip this player and move to next unsold player' : 'Mark this player as unsold and move to next player'}
               >
-                Mark as Unsold
+                {currentRound === 'unsold' ? 'Not Interested' : 'Mark as Unsold'}
               </Button>
             )}
           </div>
